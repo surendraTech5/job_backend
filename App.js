@@ -15,7 +15,7 @@ app.use(express.json());
 const allowedOrigins = [
     "http://localhost:5173", // local Vite dev
     "https://job-portal-frontend-p1qk.onrender.com", // deployed Render frontend (example)
-    "https://your-vercel-app.vercel.app", // <-- replace with actual Vercel origin
+    "https://job-frontend-rho.vercel.app/", // <-- replace with actual Vercel origin
     // Add more origins as needed for different environments
 ];
 
