@@ -14,8 +14,10 @@ app.use(express.json());
 // not permitted or if credentials are disabled.
 const allowedOrigins = [
     "http://localhost:5173", // local Vite dev
-    "https://job-portal-frontend-p1qk.onrender.com", // deployed Render frontend (example)
-    "https://job-frontend-rho.vercel.app/", // <-- replace with actual Vercel origin
+    // "https://job-portal-frontend-p1qk.onrender.com", // deployed Render frontend (example)
+    "https://job-frontend-rho.vercel.app/",
+    "https://job-frontend-tech5s-projects-b41eb997.vercel.app/",
+    "https://job-frontend-rho.vercel.app" // <-- replace with actual Vercel origin
     // Add more origins as needed for different environments
 ];
 
