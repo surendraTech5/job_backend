@@ -111,53 +111,47 @@ exports.addRecruiter = async (req, res, next) => {
 };
 
 exports.loginUser = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
+    console.log("body::::::::::::",req.body)
 
-        const isUserExists = await UserModel.findOne({ email });
-        if (isUserExists) {
-            const isPasswordMatched = await bcrypt.compare(
-                password,
-                isUserExists.password
-            );
-            if (isPasswordMatched) {
-                const tokenObj = {
-                    ID: isUserExists._id,
-                    role: isUserExists.role,
-                };
-                const TOKEN = JWTGenerator(tokenObj);
+    if (!email || !password)
+      return next(createError(400, "Email and Password required"));
 
-                const one_day = 1000 * 60 * 60 * 24; //since token expire in 1day
+    // Find user
+    const user = await UserModel.findOne({ email });
+    console.log("user found :::::;",user)
+    if (!user) return next(createError(404, "User not found"));
+    let isPasswordMatched = false;
 
-                // log some request info for debugging
-                console.log("loginUser called, origin:", req.headers.origin);
-                console.log("loginUser headers:", req.headers);
-
-                // cookies must be sent over HTTPS when `secure: true`.  Set the flag in
-                // production only (Render/prod domains are HTTPS); running locally over
-                // http will prevent the browser from storing the cookie otherwise.
-                const cookieOptions = {
-                    expires: new Date(Date.now() + one_day),
-                    secure: process.env.NODE_ENV === "production",
-                    httpOnly: true, // restricts access from client-side scripts
-                    signed: true, // keeps cookie tamper-proof
-                    sameSite: "None", // required for cross-site POSTs (login) to deliver cookie
-                };
-                console.log("setting auth cookie, options:", cookieOptions, "NODE_ENV=", process.env.NODE_ENV);
-                res.cookie(process.env.COOKIE_NAME, TOKEN, cookieOptions);
-                res.status(200).json({
-                    status: true,
-                    message: "Login Successfully",
-                });
-            } else {
-                next(createError(500, "Email or Password not matched"));
-            }
-        } else {
-            next(createError(500, "User not found!!!"));
-        }
-    } catch (error) {
-        next(createError(500, `something wrong: ${error.message}`));
+    if (process.env.NODE_ENV === "production") {
+      isPasswordMatched = await bcrypt.compare(password, user.password);
+    } else {
+      isPasswordMatched = await bcrypt.compare(password, user.password);
     }
+
+    if (!isPasswordMatched)
+      return next(createError(401, "Email or Password not matched"));
+    const tokenObj = { ID: user._id, role: user.role };
+    const TOKEN = JWTGenerator(tokenObj);
+
+    // Set cookie
+    const oneDay = 24 * 60 * 60 * 1000;
+    res.cookie(process.env.COOKIE_NAME, TOKEN, {
+      expires: new Date(Date.now() + oneDay),
+      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+      httpOnly: true,
+      signed: true,
+      sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+    });
+
+    res.status(200).json({
+      status: true,
+      message: "Login Successfully",
+    });
+  } catch (error) {
+    next(createError(500, `Something went wrong: ${error.message}`));
+  }
 };
 
 exports.updateUser = async (req, res, next) => {

@@ -2,35 +2,46 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema(
-    {
-        username: String,
-        email: String,
-        password: String,
-        location: {
-            type: String,
-        },
-        gender: {
-            type: String,
-        },
-        role: {
-            type: String,
-            enum: ["admin", "recruiter", "user"],
-            default: "user",
-        },
-        resume: {
-            type: String,
-        },
+  {
+    username: { type: String, trim: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      index: true,
+      trim: true,
     },
-    { timestamps: true } // to keep track
+    password: { type: String, required: true },
+    location: { type: String },
+    gender: { type: String },
+    role: {
+      type: String,
+      enum: ["admin", "recruiter", "user"],
+      default: "user",
+    },
+    resume: { type: String },
+  },
+  { timestamps: true }
 );
 
-// Hashing Password
+// Hash password before saving
 UserSchema.pre("save", async function (next) {
-    const password = this.password;
-    const salt = await bcrypt.genSalt(16);
-    const hashedPassword = bcrypt.hashSync(password, salt);
-    this.password = hashedPassword;
+  try {
+    if (!this.isModified("password")) return next();
+
+    const saltRounds =
+      process.env.NODE_ENV === "production"
+        ? parseInt(process.env.BCRYPT_SALT_ROUNDS_PROD)
+        : parseInt(process.env.BCRYPT_SALT_ROUNDS_DEV);
+
+    const salt = await bcrypt.genSalt(saltRounds);
+    this.password = await bcrypt.hash(this.password, salt);
+
     next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 const UserModel = mongoose.model("User", UserSchema);
