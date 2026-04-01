@@ -15,7 +15,7 @@ const {
 const {
     inputValidationMiddleware,
 } = require("../Validation/ValidationMiddleware");
-
+//code for authentication routes (register, login, logout, getMe)
 // Authentication routes
 AuthRouter.post("/logout", authenticateUser, UserController.logOut);
 AuthRouter.get("/me", authenticateUser, UserController.getMe);
