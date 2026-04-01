@@ -20,7 +20,9 @@ const UserSchema = new mongoose.Schema(
       enum: ["admin", "recruiter", "user"],
       default: "user",
     },
-    resume: { type: String },
+    resume: { type: String,
+      default: ""
+    },
   },
   { timestamps: true }
 );
