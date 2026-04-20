@@ -13,6 +13,9 @@ app.use(express.json());
 // (Render, Vercel, Netlify, etc.).  Browser will reject cookies if the origin is
 // not permitted or if credentials are disabled.
 const allowedOrigins = [
+    "https://www.prishasolutions.online/",
+    "https://www.prishasolutions.online",
+    "https://prishasolutions.online",
     "http://localhost:5173", // local Vite dev
     // "https://job-portal-frontend-p1qk.onrender.com", // deployed Render frontend (example)
     "https://job-frontend-rho.vercel.app/",
