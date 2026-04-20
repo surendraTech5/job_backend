@@ -42,3 +42,35 @@ exports.uploadResume = async (req, res, next) => {
     next(error);
   }
 };
+exports.getResumes = async (req, res, next) => {
+  try {
+    const { role, _id } = req.user;
+
+    // If normal user → return only their resume
+    if (role === "user") {
+      const user = await UserModel.findById(_id).select(
+        "username email resume role createdAt"
+      );
+
+      return res.status(200).json({
+        status: true,
+        message: "Your resume fetched successfully",
+        data: user,
+      });
+    }
+
+    // If recruiter/admin → return all users who have resumes
+    const users = await UserModel.find({
+      resume: { $ne: null },
+      role: "user", 
+    }).select("username email resume role createdAt");
+    return res.status(200).json({
+      status: true,
+      message: "All resumes fetched successfully",
+      data: users,
+    });
+  } catch (error) {
+    console.error("error on get user resumes", error);
+    next(error);
+  }
+};

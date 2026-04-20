@@ -1,6 +1,8 @@
 const express = require("express");
 const axios = require("axios");
 const ApplicationRouter = express.Router();
+const path = require("path");
+const fs = require("fs");
 
 const {
     authenticateUser,
@@ -73,6 +75,43 @@ ApplicationRouter.patch(
     userAuthorizationHandler("recruiter"),
     ApplicationController.updateJobStatus
 );
+ApplicationRouter.get(
+  "/secure-download-resume",
+  authenticateUser,
+  async (req, res) => {
+    try {
+      const { url } = req.query;
 
+      if (!url) {
+        return res.status(400).json({
+          status: false,
+          message: "Resume URL required",
+        });
+      }
+
+      if (!url.includes("res.cloudinary.com")) {
+        return res.status(400).json({
+          status: false,
+          message: "Invalid file source",
+        });
+      }
+
+      // Force download from Cloudinary
+      const downloadUrl = url.replace(
+        "/upload/",
+        "/upload/fl_attachment/"
+      );
+
+      return res.redirect(downloadUrl);
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        status: false,
+        message: "Download failed",
+      });
+    }
+  }
+);
 
 module.exports = ApplicationRouter;
